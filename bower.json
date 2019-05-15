@@ -1,0 +1,24 @@
+{
+  "name": "purescript-oak-ajax",
+  "description": "Oak.Ajax is a module that wraps Simple.Ajax and makes it easy to use inside an Oak application.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ehrenmurdick/purescript-oak-ajax.git"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^4.1.1",
+    "purescript-console": "^4.2.0",
+    "purescript-effect": "^2.0.1",
+    "purescript-either": "^4.1.1",
+    "purescript-simple-ajax": "^0.5.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0"
+  }
+}

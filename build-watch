@@ -1,0 +1,10 @@
+#!/bin/sh
+
+clear
+echo 'ready'
+
+inotifywait -r -m src/ -e modify |
+    while read p action file; do
+        pulp build
+    done
+
