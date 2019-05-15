@@ -1,10 +1,12 @@
 {
   "name": "purescript-oak-ajax",
+  "license": "MIT",
   "description": "Oak.Ajax is a module that wraps Simple.Ajax and makes it easy to use inside an Oak application.",
   "repository": {
     "type": "git",
     "url": "git://github.com/ehrenmurdick/purescript-oak-ajax.git"
   },
+  "homepage": "https://github.com/ehrenmurdick/purescript-oak-ajax",
   "ignore": [
     "**/.*",
     "node_modules",

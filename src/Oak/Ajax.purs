@@ -1,19 +1,23 @@
-module Oak.Ajax (get) where
+module Oak.Ajax
+  (get
+  , module Simple.Ajax
+  ) where
 
 import Prelude (Unit)
 import Simple.JSON (class ReadForeign)
 import Effect.Aff (Error, runAff_)
 import Effect.Console (errorShow)
 import Data.Either (Either(..))
-import Simple.Ajax (get, AjaxError) as SA
+import Simple.Ajax (get) as SA
+import Simple.Ajax (AjaxError)
 import Affjax (URL)
 import Effect (Effect)
 
 handler :: ∀ a msg.
   ReadForeign a =>
-  (Either SA.AjaxError a -> msg)
+  (Either AjaxError a -> msg)
     -> (msg -> Effect Unit)
-    -> Either Error (Either SA.AjaxError a)
+    -> Either Error (Either AjaxError a)
     -> Effect Unit
 handler ctor h eth =
   case eth of
@@ -22,7 +26,7 @@ handler ctor h eth =
 
 get :: ∀ a msg.
   ReadForeign a =>
-  (Either SA.AjaxError a -> msg)
+  (Either AjaxError a -> msg)
     -> URL
     -> (msg -> Effect Unit)
     -> Effect Unit
