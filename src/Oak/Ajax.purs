@@ -1,14 +1,15 @@
 module Oak.Ajax
-  (get
+  ( get
+  , delete
   , module Simple.Ajax
   ) where
 
 import Prelude (Unit)
 import Simple.JSON (class ReadForeign)
-import Effect.Aff (Error, runAff_)
+import Effect.Aff (Aff, Error, runAff_)
 import Effect.Console (errorShow)
 import Data.Either (Either(..))
-import Simple.Ajax (get) as SA
+import Simple.Ajax as SA
 import Simple.Ajax (AjaxError)
 import Affjax (URL)
 import Effect (Effect)
@@ -24,11 +25,28 @@ handler ctor h eth =
     Left e  -> errorShow e
     Right v -> h (ctor v)
 
+mkNoRequestBodyFun :: ∀ a msg.
+  ReadForeign a =>
+     (URL -> Aff (Either AjaxError a))
+      -> (Either AjaxError a -> msg)
+      -> URL
+      -> (msg -> Effect Unit)
+      -> Effect Unit
+mkNoRequestBodyFun f ctor url h = do
+  runAff_ (handler ctor h) (f url)
+
 get :: ∀ a msg.
   ReadForeign a =>
   (Either AjaxError a -> msg)
     -> URL
     -> (msg -> Effect Unit)
     -> Effect Unit
-get ctor url h = do
-  runAff_ (handler ctor h) (SA.get url)
+get = mkNoRequestBodyFun SA.get
+
+delete :: ∀ a msg.
+  ReadForeign a =>
+  (Either AjaxError a -> msg)
+    -> URL
+    -> (msg -> Effect Unit)
+    -> Effect Unit
+delete = mkNoRequestBodyFun SA.delete
