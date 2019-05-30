@@ -69,6 +69,15 @@ get url h =
   let getFun = simpleRequest GET in do
   runAff_ (handler h) (getFun url emptyBody)
 
+delete :: ∀ a.
+  ReadForeign a =>
+  URL
+    -> (Either AjaxError a -> Effect Unit)
+    -> Effect Unit
+delete url h =
+  let getFun = simpleRequest DELETE in do
+  runAff_ (handler h) (getFun url emptyBody)
+
 post :: ∀ a b.
   WriteForeign a
     => ReadForeign b
