@@ -1,4 +1,9 @@
-module Oak.Ajax where
+module Oak.Ajax
+  ( module Simple.Ajax
+  , post
+  , get
+  , delete
+  ) where
 
 import Prelude (Unit)
 import Simple.JSON (class ReadForeign, class WriteForeign)
