@@ -1,71 +1,82 @@
-module Oak.Ajax
-  ( get
-  , delete
-  , post
-  , module Simple.Ajax
-  ) where
+module Oak.Ajax where
 
 import Prelude (Unit)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Effect.Aff (Aff, Error, runAff_)
+import Data.HTTP.Method (CustomMethod, Method(..))
 import Effect.Console (errorShow)
 import Data.Either (Either(..))
 import Simple.Ajax as SA
+import Data.MediaType (MediaType(..))
+import Affjax.RequestHeader (RequestHeader(..))
 import Simple.Ajax (AjaxError)
 import Affjax (URL)
 import Effect (Effect)
 import Data.Maybe
 
-handler :: ∀ a msg.
+simpleRequest m =
+  SA.simpleRequest
+    (Left m)
+    { headers:
+      [ Accept (MediaType "application/json")
+      , ContentType (MediaType "application/json")
+      ]
+    }
+
+handler :: ∀ a.
   ReadForeign a =>
-  (Either AjaxError a -> msg)
-    -> (msg -> Effect Unit)
+  (Either AjaxError a -> Effect Unit)
     -> Either Error (Either AjaxError a)
     -> Effect Unit
-handler ctor h eth =
+handler h eth =
   case eth of
     Left e  -> errorShow e
-    Right v -> h (ctor v)
-
-mkNoRequestBodyFun :: ∀ a msg.
-  ReadForeign a =>
-     (URL -> Aff (Either AjaxError a))
-      -> (Either AjaxError a -> msg)
-      -> URL
-      -> (msg -> Effect Unit)
-      -> Effect Unit
-mkNoRequestBodyFun f ctor url h = do
-  runAff_ (handler ctor h) (f url)
-
-get :: ∀ a msg.
-  ReadForeign a =>
-  (Either AjaxError a -> msg)
-    -> URL
-    -> (msg -> Effect Unit)
-    -> Effect Unit
-get = mkNoRequestBodyFun SA.get
-
-delete :: ∀ a msg.
-  ReadForeign a =>
-  (Either AjaxError a -> msg)
-    -> URL
-    -> (msg -> Effect Unit)
-    -> Effect Unit
-delete = mkNoRequestBodyFun SA.delete
+    Right v -> h v
 
 
--- post :: forall a b.
--- WriteForeign a =>
+-- delete :: ∀ a msg.
+--   ReadForeign a =>
+--   (Either AjaxError a -> msg)
+--     -> URL
+--     -> (msg -> Effect Unit)
+--     -> Effect Unit
+-- delete = mkNoRequestBodyFun SA.delete
+
+
+-- simpleRequest ::
+--   forall a b r rx t.
+--   WriteForeign a =>
 --   ReadForeign b =>
---   URL -> Maybe a -> Aff (Either AjaxError b)
-post :: ∀ a b msg.
+--   Row.Union r SimpleRequestRow rx =>
+--   Row.Union r (RequestRow String) t =>
+--   Row.Nub rx SimpleRequestRow =>
+--   Row.Nub t (RequestRow String) =>
+--   Either Method CustomMethod ->
+--   { | r } ->
+--   URL ->
+--   Maybe a ->
+--   Aff (Either AjaxError b)
+
+emptyBody :: Maybe String
+emptyBody = Nothing
+
+get :: ∀ a.
+  ReadForeign a =>
+  URL
+    -> (Either AjaxError a -> Effect Unit)
+    -> Effect Unit
+get url h =
+  let getFun = simpleRequest GET in do
+  runAff_ (handler h) (getFun url emptyBody)
+
+post :: ∀ a b.
   WriteForeign a
     => ReadForeign b
     => Maybe a
-    -> (Either AjaxError b -> msg)
     -> URL
-    -> (msg -> Effect Unit)
+    -> (Either AjaxError b -> Effect Unit)
     -> Effect Unit
-post dat ctor url h = do
-  runAff_ (handler ctor h) (SA.post url dat)
+post dat url h =
+  let postFun = simpleRequest POST in do
+  runAff_ (handler h) (postFun url dat)
 
