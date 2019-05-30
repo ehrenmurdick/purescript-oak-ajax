@@ -8,6 +8,9 @@ Below you can see the source of an example Oak app that uses this module to
 make an http request, then uses the response from that request to show some
 text on the page.
 
+This package does not depend on Oak because it's not actually Oak specific,
+it's api is just handily shaped to work well within an Oak application.
+
 ```
 module Main (main) where
 
@@ -16,6 +19,7 @@ import Prelude
   , bind
   , mempty
   , unit
+  , (>>>)
   )
 import Oak.Html.Events (onClick)
 import Data.Either (Either(..))
@@ -63,14 +67,8 @@ next msg mod h =
   case msg of
 
     (GetResult _) -> mempty
-    -- mempty is a "do nothing" effect
 
-    Get -> get GetResult "/1.json" h
-    -- send a get request to "/1.json"
-    -- and decode the result into the GetResult message
-    -- Left AjaxError if it failed
-    -- Right a where a is the response type from the server
-    --   if it was successful
+    Get -> get "/1.json" (GetResult >>> h)
 
 update :: Msg -> Model -> Model
 update msg model =
@@ -95,7 +93,7 @@ app = createApp
 
 main :: Effect Unit
 main = do
-  rootNode <- runApp app unit
+  rootNode <- runApp app Nothing
   container <- getElementById "app"
   appendChildNode container rootNode
 ```
