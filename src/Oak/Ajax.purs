@@ -3,7 +3,7 @@ module Oak.Ajax
   , post
   , get
   , delete
-  , simpleRequest
+  , put
   ) where
 
 import Prelude (Unit)
@@ -44,30 +44,29 @@ handler :: ∀ a.
     -> Effect Unit
 handler h eth =
   case eth of
-    Left e  -> errorShow e
+    Left  e -> errorShow e
     Right v -> h v
 
 
 emptyBody :: Maybe String
 emptyBody = Nothing
 
+
 get :: ∀ a.
   ReadForeign a =>
   URL
     -> (Either AjaxError a -> Effect Unit)
     -> Effect Unit
-get url h =
-  let getFun = simpleRequest GET in do
-  runAff_ (handler h) (getFun url emptyBody)
+get = mkRequestFun GET emptyBody
+
 
 delete :: ∀ a.
   ReadForeign a =>
   URL
     -> (Either AjaxError a -> Effect Unit)
     -> Effect Unit
-delete url h =
-  let getFun = simpleRequest DELETE in do
-  runAff_ (handler h) (getFun url emptyBody)
+delete = mkRequestFun DELETE emptyBody
+
 
 post :: ∀ a b.
   WriteForeign a
@@ -76,7 +75,27 @@ post :: ∀ a b.
     -> URL
     -> (Either AjaxError b -> Effect Unit)
     -> Effect Unit
-post dat url h =
-  let postFun = simpleRequest POST in do
-  runAff_ (handler h) (postFun url dat)
+post = mkRequestFun POST
 
+
+put :: ∀ a b.
+  WriteForeign a
+    => ReadForeign b
+    => Maybe a
+    -> URL
+    -> (Either AjaxError b -> Effect Unit)
+    -> Effect Unit
+put = mkRequestFun PUT
+
+
+mkRequestFun :: ∀ a b.
+  WriteForeign a
+    => ReadForeign b
+    => Method
+    -> Maybe a
+    -> URL
+    -> (Either AjaxError b -> Effect Unit)
+    -> Effect Unit
+mkRequestFun meth dat url h =
+  let fun = simpleRequest meth in do
+  runAff_ (handler h) (fun url dat)
